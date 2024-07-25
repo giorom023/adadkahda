@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Tic Tac Toe</title>
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet" />
+  <!-- Stylesheet -->
+  <style>
+    * {
+      padding: 0;
+      margin: 0;
+      box-sizing: border-box;
+      font-family: "Raleway", sans-serif;
+    }
+
+    body {
+      height: 100vh;
+      background: var(--main-gradient, linear-gradient(135deg, #FF5733, #33FF57, #3357FF));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    .wrapper {
+      display: flex;
+      align-items: flex-start;
+      gap: 2em;
+    }
+
+    .scoreboard {
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 1em;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 260px;
+    }
+
+    h2 {
+      color: black;
+      text-align: center;
+      margin-bottom: 1em;
+      font-size: 1.5em;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead th {
+      background-color: #000000;
+      color: #ffffff;
+      padding: 0.5em;
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    tbody td {
+      background-color: #f0f0f0;
+      color: #333;
+      padding: 0.5em;
+      text-align: center;
+      font-size: 1.2em;
+    }
+
+    .controls {
+      text-align: center;
+      margin-top: 1em;
+    }
+
+    .popup {
+      background: linear-gradient(135deg, #8052ec, #d161ff);
+      height: 100%;
+      width: 100%;
+      position: absolute;
+      display: flex;
+      z-index: 2;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 1em;
+      font-size: 12vmin;
+    }
+
+    #message {
+      color: #ffffff;
+      text-align: center;
+      font-size: 1em;
+    }
+
+    .popup.hide {
+      display: none;
+    }
+
+    .game-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border-radius: 8px;
+      padding: 1em;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .game-title {
+      margin-bottom: 2em;
+    }
+
+    .game-title h1 {
+      color: var(--main-color, #00ffb3);
+      font-size: 3em;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+    }
+
+    .container {
+      width: 70vmin;
+      height: 70vmin;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 2vmin;
+    }
+
+    .button-option {
+      background: #ffffff;
+      height: 22vmin;
+      width: 22vmin;
+      border: none;
+      border-radius: 8px;
+      font-size: 12vmin;
+      color: var(--main-color, #d161ff);
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      position: relative;
+    }
+
+    .button-option .inner-box {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      height: 80%; /* Adjust size as needed */
+      width: 80%; /* Adjust size as needed */
+      background-color: #ffffff; /* Inner box color */
+    }
+
+    .controls button {
+      font-size: 1.3em;
+      padding: 1em;
+      border-radius: 8px;
+      background-color: var(--button-color, #0a0027);
+      color: #ffffff;
+      border: none;
+      margin: 0.5em;
+    }
+
+    #new-game {
+      background-color: #d161ff;
+    }
+
+    #restart {
+      background-color: #007bff;
+    }
+
+    #toggle-mode {
+      background-color: #ffcc00;
+    }
+
+    #adjust-color {
+      background-color: #ff5722;
+    }
+
+    .color-picker {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      background: #ffffff;
+      border-radius: 8px;
+      padding: 1em;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      display: none;
+      z-index: 999;
+    }
+
+    .color-option {
+      display: inline-block;
+      width: 50px;
+      height: 50px;
+      margin: 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .color-option:nth-child(1) {
+      background: linear-gradient(135deg, #FF5733, #33FF57, #3357FF);
+    }
+
+    .color-option:nth-child(2) {
+      background: linear-gradient(135deg, #FF33A6, #A633FF, #33FFF2);
+    }
+
+    .color-option:nth-child(3) {
+      background: linear-gradient(135deg, #33FF57, #3357FF, #FF33A6);
+    }
+
+    .color-picker-buttons {
+      text-align: center;
+      margin-top: 1em;
+    }
+
+    .color-picker-buttons button {
+      font-size: 1em;
+      padding: 0.5em 1em;
+      border-radius: 8px;
+      background-color: #007bff;
+      color: #ffffff;
+      border: none;
+      margin: 0.5em;  
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <div class="game-container">
+      <div class="controls">
+        <button id="adjust-color">Adjust Color</button>
+        <button id="new-game">New Game</button>
+        <button id="restart">Restart Scores</button>
+        <button id="toggle-mode">Play with Bot</button>
+      </div>
+      <div class="game-title">
+        <h1>Tic Tac Toe</h1>
+      </div>
+      <div class="container">
+        <!-- The 9 slots for the game board -->
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+        <button class="button-option"><span class="inner-box"></span></button>
+      </div>
+    </div>
+    <div class="scoreboard">
+      <h2>Scoreboard</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Player X</th>
+            <th>Player O</th>
+            <th>Draws</th>
+          </tr>
+        </thead>
+        <tbody id="scoreboard-body">
+          <tr>
+            <td><span id="score-x">0</span></td>
+            <td><span id="score-o">0</span></td>
+            <td><span id="score-draw">0</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="popup hide">
+    <p id="message">Sample Message</p>
+    <button id="restart-game">Restart Game</button>
+  </div>
+
+  <div class="color-picker" id="color-picker">
+    <div class="color-option" style="background: linear-gradient(135deg, #FF5733, #33FF57, #3357FF);"></div>
+    <div class="color-option" style="background: linear-gradient(135deg, #FF33A6, #A633FF, #33FFF2);"></div>
+    <div class="color-option" style="background: linear-gradient(135deg, #33FF57, #3357FF, #FF33A6);"></div>
+    <!-- Add more color options as needed -->
+    <div class="color-picker-buttons">
+      <button id="close-color-picker">Close</button>
+    </div>
+  </div>
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      const buttons = document.querySelectorAll(".button-option");
+      const newGameBtn = document.getElementById("new-game");
+      const restartBtn = document.getElementById("restart");
+      const playModeBtn = document.getElementById("toggle-mode");
+      const adjustColorBtn = document.getElementById("adjust-color");
+      const colorPicker = document.getElementById("color-picker");
+      const colorOptions = document.querySelectorAll(".color-option");
+      const gameContainer = document.querySelector(".container"); // Selecting the game board container
+  
+      let currentPlayer = "X";
+      let xScore = 0;
+      let oScore = 0;
+      let drawScore = 0;
+      let gameActive = true;
+      let botMode = false;
+  
+      // Function to switch players
+      const switchPlayer = () => {
+        currentPlayer = currentPlayer === "X" ? "O" : "X";
+      };
+  
+      // Function to handle click on a button
+      const handleClick = (button) => {
+        const { target } = button;
+        if (!gameActive || target.innerText !== "") return;
+        target.innerText = currentPlayer;
+        checkWin();
+        switchPlayer();
+        if (botMode && currentPlayer === "O" && gameActive) botTurn();
+      };
+  
+      // Function to check if someone wins
+      const checkWin = () => {
+        const winningConditions = [
+          [0, 1, 2],
+          [3, 4, 5],
+          [6, 7, 8],
+          [0, 3, 6],
+          [1, 4, 7],
+          [2, 5, 8],
+          [0, 4, 8],
+          [2, 4, 6],
+        ];
+        for (let i = 0; i < winningConditions.length; i++) {
+          const [a, b, c] = winningConditions[i];
+          if (
+            buttons[a].innerText &&
+            buttons[a].innerText === buttons[b].innerText &&
+            buttons[a].innerText === buttons[c].innerText
+          ) {
+            gameActive = false;
+            highlightWinningCombo(buttons[a], buttons[b], buttons[c]);
+            updateScore(buttons[a].innerText);
+            return;
+          }
+        }
+        if (!Array.from(buttons).some((button) => button.innerText === "")) {
+          gameActive = false;
+          updateDraw();
+        }
+      };
+  
+      // Function to highlight the winning combination
+      const highlightWinningCombo = (...buttons) => {
+        buttons.forEach((button) => {
+          button.style.background = "#f0f0f0";
+        });
+      };
+  
+      // Function to update scores
+      const updateScore = (winner) => {
+        if (winner === "X") {
+          xScore++;
+          document.getElementById("score-x").innerText = xScore;
+        } else {
+          oScore++;
+          document.getElementById("score-o").innerText = oScore;
+        }
+        showPopup(`${winner} wins!`);
+      };
+  
+      // Function to update draw score
+      const updateDraw = () => {
+        drawScore++;
+        document.getElementById("score-draw").innerText = drawScore;
+        showPopup("It's a draw!");
+      };
+  
+      // Function to show popup message
+      const showPopup = (message) => {
+        document.getElementById("message").innerText = message;
+        document.querySelector(".popup").classList.remove("hide");
+      };
+  
+      // Function to restart the game
+      const restartGame = () => {
+        buttons.forEach((button) => {
+          button.innerText = "";
+          button.style.background = "#ffffff";
+        });
+        currentPlayer = "X";
+        gameActive = true;
+        document.querySelector(".popup").classList.add("hide");
+      };
+  
+      // Function for bot's turn
+      const botTurn = () => {
+        const availableButtons = Array.from(buttons).filter((button) => !button.innerText);
+        const randomIndex = Math.floor(Math.random() * availableButtons.length);
+        setTimeout(() => {
+          availableButtons[randomIndex].innerText = "O";
+          checkWin();
+          switchPlayer();
+        }, 1000);
+      };
+  
+      // Event listeners
+      buttons.forEach((button) => button.addEventListener("click", () => handleClick(button)));
+      newGameBtn.addEventListener("click", () => {
+        restartGame();
+        changeButtonColor(newGameBtn, '#8b00ff', '#4CAF50'); // Change color immediately
+      });
+      restartBtn.addEventListener("click", () => {
+        xScore = 0;
+        oScore = 0;
+        drawScore = 0;
+        document.getElementById("score-x").innerText = xScore;
+        document.getElementById("score-o").innerText = oScore;
+        document.getElementById("score-draw").innerText = drawScore;
+        changeButtonColor(restartBtn, '#4CAF50', '#8b00ff'); // Change color immediately
+      });
+      playModeBtn.addEventListener("click", () => {
+        botMode = !botMode;
+        playModeBtn.innerText = botMode ? "Play with Human" : "Play with Bot";
+        changeButtonColor(playModeBtn, botMode ? '#4CAF50' : '#8b00ff', '#8b00ff'); // Change color immediately
+      });
+      adjustColorBtn.addEventListener("click", () => {
+        colorPicker.style.display = "block";
+        changeButtonColor(adjustColorBtn, '#FF5733', '#8b00ff'); // Change color immediately
+      });
+      document.getElementById("close-color-picker").addEventListener("click", () => {
+        colorPicker.style.display = "none";
+      });
+  
+      // Function to change button color with transition
+      const changeButtonColor = (button, newColor, originalColor) => {
+        button.style.transition = 'background-color 0.3s ease';
+        button.style.backgroundColor = newColor;
+        setTimeout(() => {
+          button.style.backgroundColor = originalColor;
+        }, 1000); // Adjust timing as needed
+      };
+  
+      // Function to adjust color based on user selection
+      const adjustColor = (color) => {
+        // Update root color variable
+        document.documentElement.style.setProperty("--main-color", color);
+  
+        // Update button color variable
+        document.documentElement.style.setProperty("--button-color", color);
+  
+        // Update body background color
+        document.body.style.background = color;
+  
+        // Update game board background color
+        gameContainer.style.background = color; // Updating game board background
+  
+        // Update game title color
+        document.querySelector(".game-title h1").style.color = color;
+  
+        // Update button text and background colors
+        const buttonsToUpdate = ['#new-game', '#restart', '#toggle-mode', '#adjust-color'];
+        buttonsToUpdate.forEach(btnId => {
+          const btn = document.querySelector(btnId);
+          if (btn) {
+            btn.style.color = color === 'blue' ? '#ffffff' : '#000000'; // Invert color for readability
+            btn.style.backgroundColor = color === 'blue' ? '#000000' : 'red'; // Example for button background color
+          }
+        });
+  
+        // Update button box-shadow color (optional)
+        document.querySelectorAll(".button-option").forEach(btn => {
+          btn.style.boxShadow = `0 0 15px ${color}`;
+        });
+  
+        // Update scoreboard text color
+        document.querySelectorAll(".scoreboard th, .scoreboard td").forEach(cell => {
+          cell.style.color = color === 'blue' ? '#ffffff' : '#000000'; // Example for scoreboard text color
+        });
+  
+        // Update popup message color
+        document.getElementById("message").style.color = color === 'blue' ? '#ffffff' : '#000000'; // Example for popup message color
+  
+        // Update scoreboard scores color
+        document.getElementById("score-x").style.color = color === 'blue' ? '#ffffff' : '#000000'; // Example for scores color
+        document.getElementById("score-o").style.color = color === 'blue' ? '#ffffff' : '#000000'; // Example for scores color
+        document.getElementById("score-draw").style.color = color === 'blue' ? '#ffffff' : '#000000'; // Example for scores color
+      };
+  
+      // Event listeners for color options
+      colorOptions.forEach((option) => {
+        option.addEventListener("click", () => {
+          const selectedColor = option.style.background;
+          adjustColor(selectedColor);
+          colorPicker.style.display = "none";
+        });
+      });
+    });
+  </script>
+  
+</body>
+</html>
